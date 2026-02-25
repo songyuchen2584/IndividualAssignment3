@@ -1,143 +1,131 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.example.individuala3.ui.screens
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
-    val snackbarHostState = remember { SnackbarHostState() }
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var analyticsEnabled by remember { mutableStateOf(false) }
-    var volume by remember { mutableFloatStateOf(0.35f) }
-    var compactMode by remember { mutableStateOf(false) }
+fun SettingsScreen(onBack: () -> Unit) {
+    val snack = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    var notifications by remember { mutableStateOf(true) }
+    var darkMode by remember { mutableStateOf(false) }
+    var autoSync by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text("Q1 — Settings") },
                 navigationIcon = {
-                    IconButton(onClick = {}) { Icon(Icons.Default.Settings, contentDescription = null) }
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { scope.launch { snack.showSnackbar("Synced") } }
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Sync")
+                    }
                 }
             )
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { padding ->
+        snackbarHost = { SnackbarHost(snack) }
+    ) { inner ->
         Column(
             modifier = Modifier
-                .padding(padding)
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(inner)
+                .padding(16.dp)
+                .fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text("Preferences", style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(8.dp))
-                    Divider()
+                    Spacer(modifier = Modifier.padding(top = 8.dp))
 
                     SettingRow(
-                        icon = { Icon(Icons.Default.Notifications, contentDescription = null) },
                         label = "Notifications",
-                        supporting = "Get reminders and updates",
+                        supporting = "Get updates and reminders",
                         control = {
                             Switch(
-                                checked = notificationsEnabled,
-                                onCheckedChange = { notificationsEnabled = it }
+                                checked = notifications,
+                                onCheckedChange = { notifications = it }
                             )
                         },
-                        onRowClick = { notificationsEnabled = !notificationsEnabled }
+                        onRowClick = { notifications = !notifications }
                     )
 
-                    Divider()
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
 
                     SettingRow(
-                        icon = { Icon(Icons.Default.Security, contentDescription = null) },
-                        label = "Analytics",
-                        supporting = "Help improve the app (anonymous)",
+                        label = "Dark mode",
+                        supporting = "Use a darker color scheme",
                         control = {
-                            Checkbox(
-                                checked = analyticsEnabled,
-                                onCheckedChange = { analyticsEnabled = it }
+                            Switch(
+                                checked = darkMode,
+                                onCheckedChange = { darkMode = it }
                             )
                         },
-                        onRowClick = { analyticsEnabled = !analyticsEnabled }
+                        onRowClick = { darkMode = !darkMode }
                     )
 
-                    Divider()
+                    Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-                    // Slider row (still a Row with left text column + right control)
                     SettingRow(
-                        icon = { Text("🔊") },
-                        label = "Notification volume",
-                        supporting = "Adjust reminder loudness",
+                        label = "Auto sync",
+                        supporting = "Sync over Wi-Fi automatically",
                         control = {
-                            Slider(
-                                value = volume,
-                                onValueChange = { volume = it },
-                                modifier = Modifier.widthIn(min = 140.dp, max = 220.dp)
+                            Switch(
+                                checked = autoSync,
+                                onCheckedChange = { autoSync = it }
                             )
-                        }
-                    )
-
-                    Divider()
-
-                    SettingRow(
-                        icon = { Text("🧩") },
-                        label = "Compact mode",
-                        supporting = "Smaller cards and spacing",
-                        control = {
-                            Button(
-                                onClick = { compactMode = !compactMode },
-                                modifier = Modifier.heightIn(min = 40.dp)
-                            ) { Text(if (compactMode) "On" else "Off") }
                         },
-                        onRowClick = { compactMode = !compactMode }
+                        onRowClick = { autoSync = !autoSync }
                     )
                 }
             }
 
-            // Extra M3 components + modifier requirements (chip, clickable, border, background, clip)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(16.dp))
-                    .clickable {
-                        // Example action
-                    }
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Quick actions", style = MaterialTheme.typography.titleSmall)
-                    Text("Tap a chip to try something", style = MaterialTheme.typography.bodySmall)
-                }
-                AssistChip(
-                    onClick = {
-                        // Example snackbar usage
-                        // launch in coroutine scope
-                    },
-                    label = { Text("Reset") }
+            Card(modifier = Modifier.fillMaxWidth()) {
+                ListItem(
+                    headlineContent = { Text("About") },
+                    supportingContent = { Text("Minimal Compose + Material 3 UI") }
                 )
             }
         }
@@ -146,39 +134,40 @@ fun SettingsScreen() {
 
 @Composable
 private fun SettingRow(
-    icon: @Composable () -> Unit,
     label: String,
     supporting: String,
     control: @Composable () -> Unit,
-    onRowClick: (() -> Unit)? = null
+    onRowClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .then(if (onRowClick != null) Modifier.clickable { onRowClick() } else Modifier)
-            .padding(vertical = 10.dp),
+            .heightIn(min = 56.dp) // heightIn requirement
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, MaterialTheme.shapes.medium) // border
+            .background(MaterialTheme.colorScheme.surface) // background
+            .clickable { onRowClick() } // clickable
+            .padding(horizontal = 12.dp, vertical = 10.dp), // padding
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .sizeIn(minWidth = 36.dp, minHeight = 36.dp)
-                .align(Alignment.CenterVertically),
-            contentAlignment = Alignment.Center
-        ) { icon() }
-
-        Spacer(Modifier.width(12.dp))
-
         Column(
-            modifier = Modifier.weight(1f) // KEY: prevents truncation + pushes control right
+            modifier = Modifier
+                .weight(1f) // weight requirement (prevents truncation)
+                .padding(end = 12.dp)
         ) {
-            Text(label, style = MaterialTheme.typography.bodyLarge)
-            Text(supporting, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = label, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = supporting,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
-        Spacer(Modifier.width(12.dp))
-
-        Box(modifier = Modifier.align(Alignment.CenterVertically)) {
+        Row(
+            modifier = Modifier
+                .sizeIn(minWidth = 48.dp) // sizeIn requirement
+                .align(Alignment.CenterVertically), // align requirement
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             control()
         }
     }

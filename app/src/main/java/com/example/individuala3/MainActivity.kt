@@ -3,48 +3,37 @@ package com.example.individuala3
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.individuala3.ui.theme.IndividualA3Theme
+import androidx.compose.runtime.*
 import com.example.individuala3.ui.screens.HomeScreen
+import com.example.individuala3.ui.screens.ProfileScreen
+import com.example.individuala3.ui.screens.ResponsiveScreen
 import com.example.individuala3.ui.screens.SettingsScreen
-import com.example.individuala3.ui.screens.ProfileHeaderOverlayScreen
 import com.example.individuala3.ui.screens.TagBrowserScreen
-import com.example.individuala3.ui.screens.ResponsiveMasterDetailScreen
-import androidx.compose.material3.MaterialTheme
+import com.example.individuala3.ui.theme.IndividualA3Theme
+
+private enum class AppRoute { Home, Q1, Q2, Q3, Q4 }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
+            IndividualA3Theme {
+                var route by remember { mutableStateOf(AppRoute.Home) }
 
-            MaterialTheme {
+                when (route) {
+                    AppRoute.Home -> HomeScreen(
+                        onGoQ1 = { route = AppRoute.Q1 },
+                        onGoQ2 = { route = AppRoute.Q2 },
+                        onGoQ3 = { route = AppRoute.Q3 },
+                        onGoQ4 = { route = AppRoute.Q4 }
+                    )
 
-                HomeScreen()
+                    AppRoute.Q1 -> SettingsScreen(onBack = { route = AppRoute.Home })
+                    AppRoute.Q2 -> ProfileScreen(onBack = { route = AppRoute.Home })
+                    AppRoute.Q3 -> TagBrowserScreen(onBack = { route = AppRoute.Home })
+                    AppRoute.Q4 -> ResponsiveScreen(onBack = { route = AppRoute.Home })
+                }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    IndividualA3Theme {
-        Greeting("Android")
     }
 }
